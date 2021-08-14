@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Demo.Input
+namespace Demo.InputService
 {
     public interface IHorizontalMovementInput
     {
