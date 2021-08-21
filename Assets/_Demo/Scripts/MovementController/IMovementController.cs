@@ -7,6 +7,6 @@ namespace Demo.MovementControlService
     {
         Vector3 GetHorizontalMovementVelocity(Vector3 horizontalMovementVectorInput, Transform thirdPersonCameraTransform, bool sprint);
         void CalculateVerticalMovementVelocity(Vector3 verticalMovementInputVector);
-        void Move(Vector3 horizontalMovementVelocity, Vector3 verticalMovementVelocity);
+        void MoveCharacterController(CharacterController characterController, Vector3 horizontalMovementVelocity, Vector3 verticalMovementVelocity);
     }
 }

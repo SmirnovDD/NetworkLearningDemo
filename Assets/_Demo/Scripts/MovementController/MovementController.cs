@@ -38,6 +38,11 @@ namespace Demo.MovementControlService
             _thirdPersonCameraTransform = _thirdPersonCamera.Transform;
         }
 
+        public void SetCharacterController(CharacterController characterController)
+        {
+            _characterController = characterController;
+        }
+        
         private void Update()
         {
             ApplyGravity();
@@ -54,7 +59,7 @@ namespace Demo.MovementControlService
             
             Rotate(horizontalMovementVelocity);
             
-            Move(horizontalMovementVelocity, _verticalMovementVelocity);
+            MoveCharacterController(_characterController, horizontalMovementVelocity, _verticalMovementVelocity);
         }
 
         public Vector3 GetHorizontalMovementVelocity(Vector3 horizontalMovementVectorInput, Transform thirdPersonCameraTransform, bool sprint)
@@ -71,10 +76,10 @@ namespace Demo.MovementControlService
                 _verticalMovementVelocity = Vector3.up * _jumpVelocity;
         }
 
-        public void Move(Vector3 horizontalMovementVelocity, Vector3 verticalMovementVelocity)
+        public void MoveCharacterController(CharacterController characterController, Vector3 horizontalMovementVelocity, Vector3 verticalMovementVelocity)
         {
             Vector3 velocity = horizontalMovementVelocity + verticalMovementVelocity;
-            _characterController.Move(velocity * _gameTime.DeltaTime);
+            characterController.Move(velocity * _gameTime.DeltaTime);
         }
 
         private void ApplyGravity()
