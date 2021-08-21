@@ -6,5 +6,6 @@ namespace Demo.InputService
     {
         int GetMouseClick();
         Vector2 GetMouseMoveDelta();
+        Vector2 GetMouseWheel();
     }
 }

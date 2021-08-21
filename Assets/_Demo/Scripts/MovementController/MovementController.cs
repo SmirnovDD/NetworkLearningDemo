@@ -12,64 +12,85 @@ namespace Demo.MovementControlService
     {
         [SerializeField] private CharacterController _characterController;
         [SerializeField] private float _movementVelocity;
-        [SerializeField] private float _jumpHeight;
+        [SerializeField] private float _jumpVelocity;
+        [SerializeField] private float _fallSpeedMultiplier;
+        [SerializeField] private float _rotationSpeed = 3f;
+        [SerializeField] private float _sprintSpeedModifier = 1.5f;
 
         private Vector3 _gravity = Physics.gravity;
-        private float _verticalVelocity;
-        private float _currentMovementVelocity;
-        private float _speedSmoothVelocity;
+        private Vector3 _verticalMovementVelocity;
+        
         private Transform _characterControllerTransform;
+        private Transform _thirdPersonCameraTransform;
         
         private IMovementInput _movementInput;
         private IGameTime _gameTime;
+        private IThirdPersonCamera _thirdPersonCamera;
         
         [Inject]
-        public void Init(IMovementInput movementInput, IGameTime gameTime)
+        public void Init(IMovementInput movementInput, IThirdPersonCamera thirdPersonCamera, IGameTime gameTime)
         {
             _movementInput = movementInput;
+            _thirdPersonCamera = thirdPersonCamera;
             _gameTime = gameTime;
+            
             _characterControllerTransform = _characterController.transform;
-        }
-        
-        void Update()
-        {
-            Move();
+            _thirdPersonCameraTransform = _thirdPersonCamera.Transform;
         }
 
-        public Vector3 GetHorizontalMovementVector()
+        private void Update()
         {
-            Vector3 horizontalMovementVectorInput = _movementInput.GetHorizontalMovementVector(); 
-            Vector3 horizontalMovementVector = _characterControllerTransform.TransformDirection(horizontalMovementVectorInput);
-            Vector3 horizontalMovementVelocity = horizontalMovementVector * _movementVelocity * _gameTime.DeltaTime;
+            ApplyGravity();
+
+            Vector3 verticalMovementInputVector = _movementInput.GetVerticalMovementVector();
             
+            CalculateVerticalMovementVelocity(verticalMovementInputVector);
+            
+            Vector3 horizontalMovementVectorInput = _movementInput.GetHorizontalMovementVector();
+
+            bool sprint = _movementInput.Sprint();
+            
+            Vector3 horizontalMovementVelocity = GetHorizontalMovementVelocity(horizontalMovementVectorInput, _thirdPersonCameraTransform, sprint);
+            
+            Rotate(horizontalMovementVelocity);
+            
+            Move(horizontalMovementVelocity, _verticalMovementVelocity);
+        }
+
+        public Vector3 GetHorizontalMovementVelocity(Vector3 horizontalMovementVectorInput, Transform thirdPersonCameraTransform, bool sprint)
+        {
+            Vector3 horizontalMovementVector = Vector3.ProjectOnPlane(thirdPersonCameraTransform.TransformDirection(horizontalMovementVectorInput), Vector3.up).normalized;
+            Vector3 horizontalMovementVelocity = horizontalMovementVector * _movementVelocity;
+            horizontalMovementVelocity = sprint ? horizontalMovementVelocity * _sprintSpeedModifier : horizontalMovementVelocity;
             return horizontalMovementVelocity;
         }
 
-        public Vector3 GetVerticalMovementVector()
+        public void CalculateVerticalMovementVelocity(Vector3 verticalMovementInputVector)
         {
-            if (_characterController.isGrounded == false)
-                return Vector3.zero;
-            if (_movementInput.GetVerticalMovementVector() == Vector3.zero)
-                return Vector3.zero;
-            
-            float jumpVelocity = Mathf.Sqrt (-2 * _gravity.y * _jumpHeight);
-            _verticalVelocity = jumpVelocity;
-            
-            return Vector3.up * _verticalVelocity;
+            if (_characterController.isGrounded && verticalMovementInputVector != Vector3.zero)
+                _verticalMovementVelocity = Vector3.up * _jumpVelocity;
         }
 
-        public void Move()
+        public void Move(Vector3 horizontalMovementVelocity, Vector3 verticalMovementVelocity)
         {
-            Vector3 movementVector = GetHorizontalMovementVector() + GetVerticalMovementVector();
-            
-            _currentMovementVelocity = Mathf.SmoothDamp (_currentMovementVelocity, movementVector.magnitude, ref _speedSmoothVelocity, 0.1f);
+            Vector3 velocity = horizontalMovementVelocity + verticalMovementVelocity;
+            _characterController.Move(velocity * _gameTime.DeltaTime);
+        }
 
-            _verticalVelocity += _gameTime.DeltaTime * _gravity.y;
+        private void ApplyGravity()
+        {
+            _verticalMovementVelocity += _gravity * _fallSpeedMultiplier;
             
-            Vector3 velocity = transform.forward * _currentMovementVelocity + Vector3.up * _verticalVelocity;
+            if (_characterController.isGrounded)
+                _verticalMovementVelocity = Vector3.zero;
+        }
 
-            
-            _characterController.Move(velocity);
+        private void Rotate(Vector3 movementVectorVelocity)
+        {
+            if (movementVectorVelocity != Vector3.zero)
+            {
+                _characterControllerTransform.forward = Vector3.Lerp(_characterControllerTransform.forward, movementVectorVelocity.normalized, _gameTime.DeltaTime * _rotationSpeed);
+            }
         }
     }
 }

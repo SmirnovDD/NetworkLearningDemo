@@ -1,6 +1,6 @@
 namespace Demo.InputService
 {
-    public interface IMovementInput : IHorizontalMovementInput, IVerticalMovementInput, IMouseInput
+    public interface IMovementInput : IHorizontalMovementInput, IVerticalMovementInput
     {
 
     }

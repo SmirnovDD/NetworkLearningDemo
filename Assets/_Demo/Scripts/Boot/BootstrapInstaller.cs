@@ -1,6 +1,5 @@
 using Demo.GameTime;
 using Demo.InputService;
-using UnityEngine;
 using Zenject;
 
 namespace Infrastructure
@@ -9,10 +8,16 @@ namespace Infrastructure
     {
         public override void InstallBindings()
         {
+            BindMouseInput();
             BindMovementInput();
             BindGameTime();
         }
 
+        private void BindMouseInput()
+        {
+            Container.Bind<IMouseInput>().To<MouseInput>().AsSingle();    
+        }
+        
         private void BindGameTime()
         {
             Container.Bind<IGameTime>().To<GameTime>().AsSingle();

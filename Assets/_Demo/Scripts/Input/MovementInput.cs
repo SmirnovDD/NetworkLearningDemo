@@ -4,6 +4,13 @@ namespace Demo.InputService
 {
     public class MovementInput : IMovementInput
     {
+        private readonly MouseInput _mouseInput = new MouseInput();
+
+        public bool Sprint()
+        {
+            return Input.GetKey(KeyCode.LeftShift);
+        }
+
         public Vector3 GetHorizontalMovementVector()
         {
             Vector3 movementVector = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
@@ -14,21 +21,6 @@ namespace Demo.InputService
         {
             Vector3 movementVector = Input.GetKeyDown(KeyCode.Space) ? Vector3.up : Vector3.zero;
             return movementVector;
-        }
-
-        public int GetMouseClick()
-        {
-            if (Input.GetMouseButtonDown(0))
-                return 0;
-            if (Input.GetMouseButtonDown(1))
-                return 1;
-            
-            return -1;
-        }
-
-        public Vector2 GetMouseMoveDelta()
-        {
-            return new Vector2(Input.GetAxis ("Mouse X"), Input.GetAxis ("Mouse Y"));
         }
     }
 }
