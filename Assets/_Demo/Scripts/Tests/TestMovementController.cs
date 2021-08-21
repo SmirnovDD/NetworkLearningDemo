@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine.TestTools;
+using NSubstitute;
 
 namespace Tests
 {
@@ -8,7 +9,7 @@ namespace Tests
         [Test]
         public void Whenact_Andarrange_Thenassert()
         {
-
+            
             // Arrange.
 
             // Act.
